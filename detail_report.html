@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<html lang="en">
+<meta charset="utf-8">
+<title>Patch report</title>
+<style>
+dd,dt { margin-left: 2em; }
+
+#patches dt.applies, #patches dt.breaks { padding: 1em; }
+#patches dt a { font-family: monospace; }
+#patches dt.applies { background-color: green; }
+#patches dt.breaks { background-color: red; }
+
+#patches dd.content pre { overflow-y: auto; max-height: 10em; }
+</style>
+
+<h1>Ticket <a href="http://code.djangoproject.com/ticket/{{ num }}">{{ num }}</a> - Patch report</h1>
+
+{% if patches %}
+<dl id="patches">{% for patch in patches.values %}
+
+  <dt class="{% if patch.applies %}applies{% else %}breaks{% endif %}">
+    <a href="http://code.djangoproject.com/attachment/ticket/{{ num }}/{{ patch.name }}">
+      {{ patch.name }}
+    </a>
+  </dt>
+  <dd><dl>
+
+    <dt>Content</dt>
+    <dd class="content"><pre><code>{{ patch.content }}</code></pre></dd>
+
+    {% if not patch.applies %}
+      <dt>Patch application</dt>
+      <dd class="patch_application"><dl>
+
+        {% for dir,message in patch.tried_applying_to_dir.items %}
+          <dt>{% if not dir %}/ (repository root){% else %}{{ dir }}{% endif %}</dt>
+          <dd class="content"><pre><code>{{ message }}</code></pre></dd>
+        {% endfor %}
+
+      </dl></dd>
+    {% endif %}
+
+  </dl></dd>
+
+{% endfor %}</dl>
+{% else %}
+No patches attached yet.
+{% endif %}
+
+
