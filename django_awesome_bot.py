@@ -12,8 +12,8 @@ TRAC_URL = 'http://code.djangoproject.com'
 TICKET_URL = 'http://code.djangoproject.com/ticket/%s'
 
 class PatchDoesNotApplyException(Exception):
-    def __init__(self, tried_dirs=None):
-        self.tried_dirs = tried_dirs or {}
+    def __init__(self, tried_dirs):
+        self.tried_dirs = tried_dirs
 
 def fetch_ticket(ticket_num):
     server = xmlrpclib.ServerProxy("http://djangorocks@code.djangoproject.com/login/xmlrpc") 
@@ -58,6 +58,8 @@ def apply_patch_to_git(repo, patch, directory=None):
         return patch
 
     except git.GitCommandError, error:
+        fail = PatchDoesNotApplyException({directory: error.stderr, })
+
         if 'No such file or directory' in error.stderr and directory == None:
             # this is a patch that was created diffing against a subdirectory,
             # let's find out, where it applies.
@@ -70,21 +72,19 @@ def apply_patch_to_git(repo, patch, directory=None):
                     if tf.endswith(af):
                         possible_root_dirs.add(tf[:-len(af)])
 
-            tried_everything = PatchDoesNotApplyException()
+            tried_everything = fail.tried_dirs
             for possible_root_dir in possible_root_dirs:
                 try:
                     return apply_patch_to_git(repo, patch, directory=possible_root_dir)
                 except PatchDoesNotApplyException, doesnotapplyexception:
-                    tried_everything.tried_dirs.update(doesnotapplyexception)
+                    tried_everything.update(doesnotapplyexception.tried_dirs)
 
-            raise tried_everything
+            raise PatchDoesNotApplyException(tried_everything)
 
         if 'patch does not apply' in error.stderr: # FIXME: test whether all lines contain that
-            tried_dirs = {}
-            tried_dirs[directory] = error.stderr
-            raise PatchDoesNotApplyException(tried_dirs)
+            raise fail
 
-        assert False, 'unknown error while applying patch'
+        assert False, 'unknown error while applying patch: %s' % error.stderr
 
     finally:
         patch_file.close()
