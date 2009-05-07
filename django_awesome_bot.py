@@ -12,7 +12,8 @@ TRAC_URL = 'http://code.djangoproject.com'
 TICKET_URL = 'http://code.djangoproject.com/ticket/%s'
 
 class PatchDoesNotApplyException(Exception):
-    pass
+    def __init__(self, tried_dirs=None):
+        self.tried_dirs = tried_dirs or {}
 
 def fetch_ticket(ticket_num):
     server = xmlrpclib.ServerProxy("http://djangorocks@code.djangoproject.com/login/xmlrpc") 
@@ -38,10 +39,6 @@ def fetch_ticket(ticket_num):
       'patches': patches,
     })
 
-    import pprint
-    pp = pprint.PrettyPrinter(indent=4)
-    pp.pprint(ticket_info)
-
     return ticket_info
 
 def apply_patch_to_git(repo, patch, directory=None):
@@ -49,16 +46,19 @@ def apply_patch_to_git(repo, patch, directory=None):
         patch_file = tempfile.NamedTemporaryFile()
         patch_file.write(patch['content'])
         patch_file.flush()
+
         if directory:
             repo.git.apply(patch_file.name, directory=directory)
         else:
             repo.git.apply(patch_file.name)
+
+        patch['applies'] = True
+        patch['applies_to_dir'] = directory
+
         return patch
 
     except git.GitCommandError, error:
         if 'No such file or directory' in error.stderr and directory == None:
-            print "PATCH is not against the root dir, trying to figure out where it does apply"
-
             # this is a patch that was created diffing against a subdirectory,
             # let's find out, where it applies.
             affected_files = list( line.split('\t')[2] for line in repo.git.apply(patch_file.name, '--numstat').split('\n') )
@@ -70,18 +70,19 @@ def apply_patch_to_git(repo, patch, directory=None):
                     if tf.endswith(af):
                         possible_root_dirs.add(tf[:-len(af)])
 
+            tried_everything = PatchDoesNotApplyException()
             for possible_root_dir in possible_root_dirs:
-                print "test", possible_root_dir
                 try:
                     return apply_patch_to_git(repo, patch, directory=possible_root_dir)
                 except PatchDoesNotApplyException, doesnotapplyexception:
-                    print "does not apply against", possible_root_dir, doesnotapplyexception.args
-                    pass # didn't guess right
+                    tried_everything.tried_dirs.update(doesnotapplyexception)
 
-            raise PatchDoesNotApplyException(error.stderr)
+            raise tried_everything
 
         if 'patch does not apply' in error.stderr: # FIXME: test whether all lines contain that
-            raise PatchDoesNotApplyException(error.stderr)
+            tried_dirs = {}
+            tried_dirs[directory] = error.stderr
+            raise PatchDoesNotApplyException(tried_dirs)
 
         assert False, 'unknown error while applying patch'
 
@@ -99,10 +100,11 @@ def create_git_branches_from_patches(ticket_dict, branch_prefix='triage/'):
         try:
             patch = apply_patch_to_git(repo, patch)
         except PatchDoesNotApplyException, doesnotapplyexception:
-            ticket_dict['patches'][name]['applies'] = False
+            patch['applies'] = False
+            patch['tried_applying_to_dir'] = doesnotapplyexception.tried_dirs
             continue
-
-        ticket_dict['patches'][name]['applies'] = True
+        finally:
+            ticket_dict['patches'][name] = patch
 
         try:
             repo.git.checkout("master", b="%s%s/%s" % (branch_prefix, time.time(), name))
@@ -119,13 +121,15 @@ def create_git_branches_from_patches(ticket_dict, branch_prefix='triage/'):
             message_file.close()
             repo.git.checkout("master")
 
-if __name__ == '__main__':
-    if len(sys.argv) < 2:
-        print "Please provide a ticket number", sys.argv
-        sys.exit()
+    return ticket_dict
 
+if __name__ == '__main__':
     ticket_num = sys.argv[1]
 
     patches = fetch_ticket(int(ticket_num))
-    create_git_branches_from_patches(patches)
+    print create_git_branches_from_patches(patches)
+
+
+
+
 
