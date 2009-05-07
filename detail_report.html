@@ -2,16 +2,32 @@
 <html lang="en">
 <meta charset="utf-8">
 <title>Patch report</title>
+<link rel="stylesheet" href="http://yui.yahooapis.com/3.0.0pr2/build/cssreset/reset-context-min.css">
+
 <style>
-dd,dt { margin-left: 2em; }
+body { background:#092e20; font-family: sans-serif; }
 
-#patches dt.applies, #patches dt.breaks { padding: 1em; }
-#patches dt a { font-family: monospace; }
-#patches dt.applies { background-color: green; }
-#patches dt.breaks { background-color: red; }
+h1 { color: #9AEF3F; }
 
-#patches dd.content pre { overflow-y: auto; max-height: 10em; }
+a:link, a:visited { color: #fff; }
+
+dd,dl,dt { padding: 0.3em; }
+pre { margin:0 0 0 0; padding-left:10px; }
+
+#patches { padding:0.5em; background:#234F32; color:#000; }
+#patches a:link, #patches a:visited { color: #000; }
+
+#patches dt.applies, #patches dt.breaks { font-size: 1.0 !important; }
+#patches dt { font-size: 1.3em; color: #fff; background: #487858; }
+#patches dt a { font-size: 1.3em; }
+#patches dt.applies { background-color: #fff; border-left: 20 px solid green; }
+#patches dt.breaks { background-color: #fff; border-left: 20px solid red; }
+
+#patches dd.content pre { overflow-y: auto; max-height: 18em; }
+#patches .applies pre { background: #fff; border-left: 10px solid #487858 ; }
+#patches .breaks pre { background: #fff; border-left: 10px solid red ; }
 </style>
+
 
 <h1>Ticket <a href="http://code.djangoproject.com/ticket/{{ num }}">{{ num }}</a> - Patch report</h1>
 
@@ -23,7 +39,8 @@ dd,dt { margin-left: 2em; }
       {{ patch.name }}
     </a>
   </dt>
-  <dd><dl>
+  <dd class="{% if patch.applies %}applies{% else %}breaks{% endif %}">
+  <dl>
 
     <dt>Content</dt>
     <dd class="content"><pre><code>{{ patch.content }}</code></pre></dd>
