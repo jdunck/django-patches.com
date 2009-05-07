@@ -2,15 +2,10 @@
 
 import os
 import sys
-import urllib2
-import BeautifulSoup
-import commands
-from optparse import OptionParser
-from urlparse import urljoin
-import subprocess
 import git
 import tempfile
 import time
+import xmlrpclib
 
 DJANGO_SRC = os.path.join(os.path.dirname(__file__), 'django')
 TRAC_URL = 'http://code.djangoproject.com'
@@ -20,23 +15,34 @@ class PatchDoesNotApplyException(Exception):
     pass
 
 def fetch_ticket(ticket_num):
-    soup = BeautifulSoup.BeautifulSoup(urllib2.urlopen(TICKET_URL % ticket_num).read())
+    server = xmlrpclib.ServerProxy("http://djangorocks@code.djangoproject.com/login/xmlrpc") 
 
-    links = soup.findAll('a', title="View attachment")
+    links =  server.ticket.listAttachments(ticket_num)
 
     patches = {}
-
-    for link in links:
-      patches[link.string] = {
-        'content': urllib2.urlopen(urljoin(TICKET_URL, link['href'] + '?format=raw')).read(),
-        'name': link.string,
+    for filename, description, size, timestamp, user in links:
+      patches[filename] = {
+        'content': server.ticket.getAttachment(ticket_num, filename).data,
+        'name': filename,
+        'description': description,
+        'timestamp': timestamp,
+        'user': user,
       }
 
-    return {
-      'patches': patches,
-      'title': soup.find('title').find(text=True),
+    num, somedate, somedate2, ticket_info = server.ticket.get(ticket_num)
+
+    ticket_info.update({
       'num': ticket_num,
-    }
+      'somedate': somedate,
+      'somedate2': somedate2,
+      'patches': patches,
+    })
+
+    import pprint
+    pp = pprint.PrettyPrinter(indent=4)
+    pp.pprint(ticket_info)
+
+    return ticket_info
 
 def apply_patch_to_git(repo, patch, directory=None):
     try:
@@ -87,14 +93,16 @@ def create_git_branches_from_patches(ticket_dict, branch_prefix='triage/'):
     repo = git.Repo(DJANGO_SRC)
 
     for name, patch in ticket_dict['patches'].items():
-        patch['applies'] = False
 
         repo.git.reset("--hard", "master")
 
         try:
             patch = apply_patch_to_git(repo, patch)
         except PatchDoesNotApplyException, doesnotapplyexception:
+            ticket_dict['patches'][name]['applies'] = False
             continue
+
+        ticket_dict['patches'][name]['applies'] = True
 
         try:
             repo.git.checkout("master", b="%s%s/%s" % (branch_prefix, time.time(), name))
