@@ -32,7 +32,7 @@ pre { margin:0 0 0 0; padding-left:10px; }
 <h1>Ticket <a href="http://code.djangoproject.com/ticket/{{ num }}">{{ num }}</a> - Patch report</h1>
 
 {% if patches %}
-<dl id="patches">{% for patch in patches.values %}
+<dl id="patches">{% for patch in patches %}
 
   <dt class="{% if patch.applies %}applies{% else %}breaks{% endif %}">
     <a href="http://code.djangoproject.com/attachment/ticket/{{ num }}/{{ patch.name }}">

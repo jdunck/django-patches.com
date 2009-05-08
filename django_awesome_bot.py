@@ -20,15 +20,15 @@ def fetch_ticket(ticket_num):
 
     links =  server.ticket.listAttachments(ticket_num)
 
-    patches = {}
+    patches = []
     for filename, description, size, timestamp, user in links:
-      patches[filename] = {
+      patches.append({
         'content': server.ticket.getAttachment(ticket_num, filename).data,
         'name': filename,
         'description': description,
         'timestamp': timestamp,
         'user': user,
-      }
+      })
 
     num, somedate, somedate2, ticket_info = server.ticket.get(ticket_num)
 
@@ -93,7 +93,7 @@ def create_git_branches_from_patches(ticket_dict, branch_prefix='triage/'):
     # prepare repo
     repo = git.Repo(DJANGO_SRC)
 
-    for name, patch in ticket_dict['patches'].items():
+    for patch in ticket_dict['patches']:
 
         repo.git.reset("--hard", "master")
 
@@ -103,14 +103,12 @@ def create_git_branches_from_patches(ticket_dict, branch_prefix='triage/'):
             patch['applies'] = False
             patch['tried_applying_to_dir'] = doesnotapplyexception.tried_dirs
             continue
-        finally:
-            ticket_dict['patches'][name] = patch
 
         try:
-            repo.git.checkout("master", b="%s%s/%s" % (branch_prefix, time.time(), name))
+            repo.git.checkout("master", b="%s%s/%s" % (branch_prefix, time.time(), patch['name']))
 
             message_file = tempfile.NamedTemporaryFile()
-            message_file.write('%(num)d: %(name)s' % {'num': ticket_dict['num'], 'name': name, })
+            message_file.write('%(num)d: %(name)s' % {'num': ticket_dict['num'], 'name': patch['name'], })
             message_file.flush()
 
             repo.git.add("--update")
