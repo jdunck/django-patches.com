@@ -121,12 +121,11 @@ def create_git_branches_from_patches(ticket_dict, branch_prefix='triage/'):
 
     return ticket_dict
 
-if __name__ == '__main__':
-    from django.template import Template, Context
-    from django.conf import settings
-    settings.configure()
 
-    t = Template(open("detail_report.html").read())
-    c = Context(create_git_branches_from_patches(fetch_ticket(int(sys.argv[1]))))
-    print t.render(c)
+def update_ticket(ticket_num):
+    ticket_info = create_git_branches_from_patches(fetch_ticket(ticket_num))
+    return ticket_info
+
+if __name__ == '__main__':
+    print update_ticket(int(sys.argv[1]))
 

@@ -12,9 +12,14 @@ from django.template import Template, Context
 from django.conf import settings
 settings.configure()
 
-from django_awesome_bot import fetch_ticket, create_git_branches_from_patches
+from django_awesome_bot import update_ticket
 
 TICKET_NUM_FORM = open("index.html").read()
+
+def render_ticket_info(ticket_info):
+    t = Template(open("detail_report.html").read())
+    c = Context(ticket_info)
+    return t.render(c)
 
 def simple_app(environ, start_response):
     def make_response(content, content_type='text/html'):
@@ -34,6 +39,4 @@ def simple_app(environ, start_response):
     if not query or not query.has_key('ticket'):
        return make_response(TICKET_NUM_FORM)
 
-    t = Template(open("detail_report.html").read())
-    c = Context(create_git_branches_from_patches(fetch_ticket(int(query['ticket']))))
-    return make_response(str(t.render(c)))
+    return make_response(str(render_ticket_info(update_ticket(int(query['ticket'])))))
