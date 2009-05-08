@@ -1,0 +1,38 @@
+{% extends "base.html" %}
+{% block content %}
+<h1>Ticket <a href="http://code.djangoproject.com/ticket/{{ num }}">{{ num }}</a> - Patch report</h1>
+
+{% if patches %}
+<dl id="patches">{% for patch in patches %}
+
+  <dt class="{% if patch.applies %}applies{% else %}breaks{% endif %}">
+    <a href="http://code.djangoproject.com/attachment/ticket/{{ num }}/{{ patch.name }}">
+      {{ patch.name }}
+    </a>
+  </dt>
+  <dd class="{% if patch.applies %}applies{% else %}breaks{% endif %}">
+  <dl>
+
+    <dt>Content</dt>
+    <dd class="content"><pre><code>{{ patch.content }}</code></pre></dd>
+
+    {% if not patch.applies %}
+      <dt>Patch application</dt>
+      <dd class="patch_application"><dl>
+
+        {% for dir,message in patch.tried_applying_to_dir.items %}
+          <dt>{% if not dir %}/ (repository root){% else %}{{ dir }}{% endif %}</dt>
+          <dd class="content"><pre><code>{{ message }}</code></pre></dd>
+        {% endfor %}
+
+      </dl></dd>
+    {% endif %}
+
+  </dl></dd>
+
+{% endfor %}</dl>
+{% else %}
+No patches attached yet.
+{% endif %}
+
+{% endblock %}

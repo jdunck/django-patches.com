@@ -8,18 +8,15 @@ try:
 except ImportError:
     from cgi import parse_qsl # Python <2.5
 
-from django.template import Template, Context
+from django.template.loader import render_to_string
 from django.conf import settings
-settings.configure()
+
+import os
+settings.configure(
+  TEMPLATE_DIRS=(os.path.join(os.path.dirname(__file__), 'templates'), ),
+)
 
 from django_awesome_bot import update_ticket
-
-TICKET_NUM_FORM = open("index.html").read()
-
-def render_ticket_info(ticket_info):
-    t = Template(open("detail_report.html").read())
-    c = Context(ticket_info)
-    return t.render(c)
 
 def simple_app(environ, start_response):
     def make_response(content, content_type='text/html'):
@@ -27,16 +24,17 @@ def simple_app(environ, start_response):
         headers = [('Content-type', content_type)]
         start_response(status, headers)
 
-        return [content]
+        return [str(content)]
 
     url = urlparse(request_uri(environ, include_query=1))
 
     if not url.query:
-       return make_response(TICKET_NUM_FORM)
+       return make_response(render_to_string("index.html"))
 
     query = dict(parse_qsl(url.query))
 
     if not query or not query.has_key('ticket'):
-       return make_response(TICKET_NUM_FORM)
+       return make_response(render_to_string("index.html"))
 
-    return make_response(str(render_ticket_info(update_ticket(int(query['ticket'])))))
+    return make_response(render_to_string("detail_report.html", update_ticket(int(query['ticket']))))
+

@@ -10,6 +10,7 @@ body { background:#092e20; font-family: sans-serif; }
 h1 { color: #9AEF3F; }
 
 a:link, a:visited { color: #fff; }
+form {color: white; }
 
 dd,dl,dt { padding: 0.3em; }
 pre { margin:0 0 0 0; padding-left:10px; }
@@ -28,40 +29,4 @@ pre { margin:0 0 0 0; padding-left:10px; }
 #patches .breaks pre { background: #fff; border-left: 10px solid red ; }
 </style>
 
-
-<h1>Ticket <a href="http://code.djangoproject.com/ticket/{{ num }}">{{ num }}</a> - Patch report</h1>
-
-{% if patches %}
-<dl id="patches">{% for patch in patches %}
-
-  <dt class="{% if patch.applies %}applies{% else %}breaks{% endif %}">
-    <a href="http://code.djangoproject.com/attachment/ticket/{{ num }}/{{ patch.name }}">
-      {{ patch.name }}
-    </a>
-  </dt>
-  <dd class="{% if patch.applies %}applies{% else %}breaks{% endif %}">
-  <dl>
-
-    <dt>Content</dt>
-    <dd class="content"><pre><code>{{ patch.content }}</code></pre></dd>
-
-    {% if not patch.applies %}
-      <dt>Patch application</dt>
-      <dd class="patch_application"><dl>
-
-        {% for dir,message in patch.tried_applying_to_dir.items %}
-          <dt>{% if not dir %}/ (repository root){% else %}{{ dir }}{% endif %}</dt>
-          <dd class="content"><pre><code>{{ message }}</code></pre></dd>
-        {% endfor %}
-
-      </dl></dd>
-    {% endif %}
-
-  </dl></dd>
-
-{% endfor %}</dl>
-{% else %}
-No patches attached yet.
-{% endif %}
-
-
+{% block content %}{% endblock %}
