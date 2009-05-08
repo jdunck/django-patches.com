@@ -138,6 +138,33 @@ def put_on_couch(ticket_num, ticket_dict):
 
     db[id] = ticket_dict
 
+class CouchQueries(object):
+    QUERIES = dict(
+      failing_patches = \
+        '''
+        function(ticket) {
+          for (var i in ticket.patches) {
+            if(!ticket.patches[i].applies) {
+              emit(ticket.num, ticket.patches[i]);
+            }
+          }
+        }
+        ''',
+      applying_patches = \
+        '''
+        function(ticket) {
+          for (var i in ticket.patches) {
+            if(ticket.patches[i].applies) {
+              emit(ticket.num, ticket.patches[i]);
+            }
+          }
+        }
+        ''',
+    )
+
+    def __getattr__(self, name):
+        return db.query(self.QUERIES[name])
+
 def update_ticket(ticket_num):
     ticket_info = create_git_branches_from_patches(fetch_ticket(ticket_num))
     put_on_couch(ticket_num, ticket_info)

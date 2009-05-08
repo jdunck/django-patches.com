@@ -1,7 +1,19 @@
 {% extends "base.html" %}
 
 {% block content %}
-<form action="" method="get">
-  <label>Ticket #<input name="ticket" type="input"></label>
-</form>
+
+<h1>Django patch reports</h1>
+
+<h2>Patches that actually apply</h2>
+
+<ul>{% for patch in query.applying_patches%}
+  <li><a href="?ticket={{ patch.key }}"><code>{{ patch.value.name }}</code> from ticket {{ patch.key }}</a>
+{% endfor %}</ul>
+
+<h2>Patches that fail to apply</h2>
+
+<ul>{% for patch in query.failing_patches %}
+  <li><a href="?ticket={{ patch.key }}"><code>{{ patch.value.name }}</code> from ticket {{ patch.key }}</a>
+{% endfor %}</ul>
+
 {% endblock %}
