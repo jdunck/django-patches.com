@@ -40,11 +40,11 @@ def fetch_ticket(ticket_num):
     return ticket_info
 
 def apply_patch_to_git(repo, patch, directory=None):
-    try:
-        patch_file = tempfile.NamedTemporaryFile()
-        patch_file.write(patch['content'])
-        patch_file.flush()
+    patch_file = tempfile.NamedTemporaryFile()
+    patch_file.write(patch['content'])
+    patch_file.flush()
 
+    try:
         if directory:
             repo.git.apply(patch_file.name, directory=directory)
         else:
