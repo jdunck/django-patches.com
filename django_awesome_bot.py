@@ -7,17 +7,15 @@ import tempfile
 import time
 import xmlrpclib
 
-DJANGO_SRC = os.path.join(os.path.dirname(__file__), 'django')
-TRAC_URL = 'http://code.djangoproject.com'
-TICKET_URL = 'http://code.djangoproject.com/ticket/%s'
+from settings import DJANGO_SRC, TRAC_URL, TICKET_URL,\
+                     TRAC_XMLRPC_URL, COUCH_DB_URL, COUCH_DB_NAME
 
 class PatchDoesNotApplyException(Exception):
     def __init__(self, tried_dirs):
         self.tried_dirs = tried_dirs
 
 def fetch_ticket(ticket_num):
-    server = xmlrpclib.ServerProxy("http://djangorocks@code.djangoproject.com/login/xmlrpc") 
-
+    server = xmlrpclib.ServerProxy(TRAC_XMLRPC_URL)
     links =  server.ticket.listAttachments(ticket_num)
 
     patches = []
@@ -123,8 +121,7 @@ def create_git_branches_from_patches(ticket_dict, branch_prefix='triage/'):
 
 
 from couchdb.client import Server
-server = Server('http://localhost:5984/')
-COUCH_DB_NAME = 'django_awesome_bot'
+server = Server(COUCH_DB_URL)
 
 if not COUCH_DB_NAME in server:
     server.create(COUCH_DB_NAME)
