@@ -122,8 +122,28 @@ def create_git_branches_from_patches(ticket_dict, branch_prefix='triage/'):
     return ticket_dict
 
 
+from couchdb.client import Server
+server = Server('http://localhost:5984/')
+COUCH_DB_NAME = 'django_awesome_bot'
+
+if not COUCH_DB_NAME in server:
+    server.create(COUCH_DB_NAME)
+
+db = server[COUCH_DB_NAME]
+
+def put_on_couch(ticket_num, ticket_dict):
+    id = "ticket_%d" % ticket_num
+
+    if id in db: # update then
+        _ticket_dict = db[id]
+        _ticket_dict.update(ticket_dict)
+        ticket_dict = _ticket_dict
+
+    db[id] = ticket_dict
+
 def update_ticket(ticket_num):
     ticket_info = create_git_branches_from_patches(fetch_ticket(ticket_num))
+    put_on_couch(ticket_num, ticket_info)
     return ticket_info
 
 if __name__ == '__main__':
