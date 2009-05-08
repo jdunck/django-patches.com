@@ -14,6 +14,9 @@ class PatchDoesNotApplyException(Exception):
     def __init__(self, tried_dirs):
         self.tried_dirs = tried_dirs
 
+class PatchAlreadyApplied(PatchDoesNotApplyException):
+    pass
+
 def fetch_ticket(ticket_num):
     server = xmlrpclib.ServerProxy(TRAC_XMLRPC_URL)
     links =  server.ticket.listAttachments(ticket_num)
@@ -58,9 +61,11 @@ def apply_patch_to_git(repo, patch, directory=None):
     except git.GitCommandError, error:
         fail = PatchDoesNotApplyException({directory: error.stderr, })
 
-        if 'No such file or directory' in error.stderr and directory == None:
+        if 'No such file or directory' in error.stderr:
             # this is a patch that was created diffing against a subdirectory,
             # let's find out, where it applies.
+            if directory: raise fail
+
             affected_files = list( line.split('\t')[2] for line in repo.git.apply(patch_file.name, '--numstat').split('\n') )
             tracked_files = repo.git.ls_tree("-r", '--name-only', 'master').split('\n')
 
@@ -79,10 +84,17 @@ def apply_patch_to_git(repo, patch, directory=None):
 
             raise PatchDoesNotApplyException(tried_everything)
 
+        if error.stderr == 'error: No changes':
+            raise fail # FIXME: should raise PatchAlreadyApplied
+
         if 'patch does not apply' in error.stderr: # FIXME: test whether all lines contain that
             raise fail
+        elif 'corrupt patch at' in error.stderr:
+            raise fail
+        elif 'already exists in working directory' in error.stderr:
+            raise fail
 
-        assert False, 'unknown error while applying patch: %s' % error.stderr
+        assert False, 'unknown error while applying patch: >>%s<<' % error.stderr
 
     finally:
         patch_file.close()
