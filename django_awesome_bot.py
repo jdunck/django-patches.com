@@ -179,7 +179,10 @@ class CouchQueries(object):
 
 def update_ticket(ticket_num):
     ticket_info = create_git_branches_from_patches(fetch_ticket(ticket_num))
-    put_on_couch(ticket_num, ticket_info)
+    try:
+        put_on_couch(ticket_num, ticket_info)
+    except UnicodeDecodeError:
+        pass # FIXME: put as attachement then
     return ticket_info
 
 if __name__ == '__main__':
