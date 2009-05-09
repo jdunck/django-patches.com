@@ -73,10 +73,13 @@ def apply_patch_to_git(repo, patch, directory=None):
             for tf in tracked_files:
                 for af in affected_files:
                     if tf.endswith(af):
-                        possible_root_dirs.add(tf[:-len(af)])
+                        common_path = tf[:-len(af)]
+                        if common_path:
+                            possible_root_dirs.add(common_path)
 
             tried_everything = fail.tried_dirs
             for possible_root_dir in possible_root_dirs:
+                assert possible_root_dir, ("FAIL", affected_files, possible_root_dirs)
                 try:
                     return apply_patch_to_git(repo, patch, directory=possible_root_dir)
                 except PatchDoesNotApplyException, doesnotapplyexception:
