@@ -49,9 +49,9 @@ def apply_patch_to_git(repo, patch, directory=None):
 
     try:
         if directory:
-            repo.git.apply(patch_file.name, directory=directory)
+            repo.git.apply(patch_file.name, '--index', directory=directory, )
         else:
-            repo.git.apply(patch_file.name)
+            repo.git.apply(patch_file.name, '--index', )
 
         patch['applies'] = True
         patch['applies_to_dir'] = directory
@@ -61,7 +61,7 @@ def apply_patch_to_git(repo, patch, directory=None):
     except git.GitCommandError, error:
         fail = PatchDoesNotApplyException({directory: error.stderr, })
 
-        if 'No such file or directory' in error.stderr:
+        if 'does not exist in index' in error.stderr:
             # this is a patch that was created diffing against a subdirectory,
             # let's find out, where it applies.
             if directory: raise fail
