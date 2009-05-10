@@ -137,7 +137,7 @@ def create_git_branches_from_patches(ticket_dict, branch_prefix='triage/'):
     return ticket_dict
 
 
-from couchdb.client import Server
+from couchdb.client import Server, ResourceNotFound
 server = Server(COUCH_DB_URL)
 
 if not COUCH_DB_NAME in server:
@@ -160,31 +160,56 @@ def get_from_couch(ticket_num):
     return db[id]
 
 class CouchQueries(object):
-    QUERIES = dict(
-      failing_patches = \
-        '''
-        function(ticket) {
-          for (var i in ticket.patches) {
-            if(!ticket.patches[i].applies) {
-              emit(ticket.num, ticket.patches[i]);
+    DESIGN_DOCUMENT_NAME = '_design/queries'
+
+    QUERIES = {
+      'applying_patches': {
+        'map': '''
+          function(ticket) {
+            for (var i in ticket.patches) {
+              if (ticket.patches[i].applies) {
+                emit(ticket.num, ticket.patches[i]);
+              }
             }
           }
-        }
-        ''',
-      applying_patches = \
-        '''
-        function(ticket) {
-          for (var i in ticket.patches) {
-            if(ticket.patches[i].applies) {
-              emit(ticket.num, ticket.patches[i]);
+          ''',
+        },
+      'failing_patches': {
+        'map': '''
+          function(ticket) {
+            for (var i in ticket.patches) {
+              if (!ticket.patches[i].applies) {
+                emit(ticket.num, ticket.patches[i]);
+              }
             }
           }
-        }
-        ''',
-    )
+          ''',
+        },
+      'failing_vs_breaking': {
+        'map': '''
+          function(ticket) {
+            for (var i in ticket.patches) {
+              emit([ticket.patches[i].applies, ticket.num], ticket.patches[i]);
+            }
+          }
+          ''',
+        },
+    }
 
     def __getattr__(self, name):
-        return db.query(self.QUERIES[name])
+        return db.view('_view/queries/%s' % name)
+
+    @classmethod
+    def create_permanent_views(cls):
+        try:
+            doc = db[cls.DESIGN_DOCUMENT_NAME]
+        except ResourceNotFound:
+            doc = {}
+
+        doc['views'] = cls.QUERIES
+        db[cls.DESIGN_DOCUMENT_NAME] = doc
+
+CouchQueries.create_permanent_views()
 
 def update_ticket(ticket_num):
     ticket_info = create_git_branches_from_patches(fetch_ticket(ticket_num))
