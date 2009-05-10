@@ -96,6 +96,8 @@ def apply_patch_to_git(repo, patch, directory=None):
             raise fail
         elif 'already exists in working directory' in error.stderr:
             raise fail
+        elif 'patch fragment without header at line' in error.stderr:
+            raise fail
 
         assert False, 'unknown error while applying patch: >>%s<<' % error.stderr
 
