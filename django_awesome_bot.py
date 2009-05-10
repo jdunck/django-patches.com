@@ -155,6 +155,10 @@ def put_on_couch(ticket_num, ticket_dict):
 
     db[id] = ticket_dict
 
+def get_from_couch(ticket_num):
+    id = "ticket_%d" % ticket_num
+    return db[id]
+
 class CouchQueries(object):
     QUERIES = dict(
       failing_patches = \

@@ -16,7 +16,7 @@ settings.configure(
   TEMPLATE_DIRS=(os.path.join(os.path.dirname(__file__), 'templates'), ),
 )
 
-from django_awesome_bot import update_ticket, CouchQueries
+from django_awesome_bot import get_from_couch, CouchQueries
 
 def simple_app(environ, start_response):
     def make_response(content, content_type='text/html'):
@@ -36,5 +36,5 @@ def simple_app(environ, start_response):
     if not query or not query.has_key('ticket'):
        return make_response(render_to_string("index.html", {'query': CouchQueries()}))
 
-    context = update_ticket(int(query['ticket']))
+    context = get_from_couch(int(query['ticket']))
     return make_response(render_to_string("detail_report.html", context))
