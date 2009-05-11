@@ -196,20 +196,39 @@ class CouchQueries(object):
         },
     }
 
-    def __getattr__(self, name):
-        return db.view('_view/queries/%s' % name)
+    def __init__(self):
+        self.create_permanent_views()
+
+    @classmethod
+    def query(self, name):
+        import time
+        print name, time.ctime(),
+        x = db.view('_view/queries/%s' % name)
+        print time.ctime(),
+
+    __getattr__ = query
 
     @classmethod
     def create_permanent_views(cls):
         try:
             doc = db[cls.DESIGN_DOCUMENT_NAME]
         except ResourceNotFound:
-            doc = {}
+            doc = {'views': {}}
 
+        if doc['views'] == cls.QUERIES:
+           print "not updating permanent views"
+           return # no need to update then
+
+        print "updating permanent views"
         doc['views'] = cls.QUERIES
         db[cls.DESIGN_DOCUMENT_NAME] = doc
 
-CouchQueries.create_permanent_views()
+        # prewarm the cache
+        for key in cls.QUERIES.keys():
+            print "foo"
+            cls.query(key)
+
+couchqueries = CouchQueries()
 
 def update_ticket(ticket_num):
     ticket_info = create_git_branches_from_patches(fetch_ticket(ticket_num))
@@ -221,4 +240,3 @@ def update_ticket(ticket_num):
 
 if __name__ == '__main__':
     print update_ticket(int(sys.argv[1]))
-
