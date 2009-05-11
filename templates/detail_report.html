@@ -21,7 +21,7 @@
       <dd class="patch_application"><dl>
 
         {% for dir,message in patch.tried_applying_to_dir.items %}
-          <dt>{% if not dir %}/ (repository root){% else %}{{ dir }}{% endif %}</dt>
+          <dt>{% ifequal dir 'null' %}/ (repository root){% else %}{{ dir }}{% endifequal %}</dt>
           <dd class="content"><pre><code>{{ message }}</code></pre></dd>
         {% endfor %}
 
