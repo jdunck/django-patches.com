@@ -1,38 +1,48 @@
 {% extends "base.html" %}
+{% block title %} Ticket #{{ num}} - django patch report {% endblock  %}
 {% block content %}
-<h1>Ticket <a href="http://code.djangoproject.com/ticket/{{ num }}">{{ num }}</a> - Patch report</h1>
+
+<h1>Patch report for ticket <a href="">#{{ num }}</a></h1>
+
+<dl id="info" class="table">
+
+<dt>Ticket no</dt><dd>#{{ num }} (<a href="http://code.djangoproject.com/ticket/{{ num }}">on code.djangoproject.com</a>)</dd>
+<dt>Status</dt><dd>{{ status }}</dd>
+<dt>Stage</dt><dd>{{ stage }}</dd>
+
+</dl>
 
 {% if patches %}
-<dl id="patches">{% for patch in patches %}
-
-  <dt class="{% if patch.applies %}applies{% else %}breaks{% endif %}">
-    <a href="http://code.djangoproject.com/attachment/ticket/{{ num }}/{{ patch.name }}">
-      {{ patch.name }}
-    </a>
-  </dt>
-  <dd class="{% if patch.applies %}applies{% else %}breaks{% endif %}">
-  <dl>
-
-    <dt>Content</dt>
-    <dd class="content"><pre><code>{{ patch.content }}</code></pre></dd>
+<section id="patches">{% for patch in patches %}
+  <section class="detail {% if patch.applies %}applies{% else %}breaks{% endif %}">
+    <h2>
+      <a href="http://code.djangoproject.com/attachment/ticket/{{ num }}/{{ patch.name }}">
+        {{ patch.name }}
+      </a>
+    </h2>
+    <pre><code>{{ patch.content }}</code></pre>
 
     {% if not patch.applies %}
-      <dt>Patch application</dt>
-      <dd class="patch_application"><dl>
+    <section class="patch_application">
+      <h4>Patch application failed against the following subdirectories:</h4>
 
-        {% for dir,message in patch.tried_applying_to_dir.items %}
-          <dt>{% ifequal dir 'null' %}/ (repository root){% else %}{{ dir }}{% endifequal %}</dt>
-          <dd class="content"><pre><code>{{ message }}</code></pre></dd>
-        {% endfor %}
+      {% for dir,message in patch.tried_applying_to_dir.items %}
+      <section class="try">
+        <h4>{% ifequal dir 'null' %}<code>/</code><i>(repository root)</i>{% else %}<code>{{ dir }}</code>{% endifequal %}</h4>
+        <pre><code>{{ message }}</code></pre>
+      </section>
+      {% endfor %}
 
-      </dl></dd>
+    </section>
     {% endif %}
 
-  </dl></dd>
+  </section>
 
-{% endfor %}</dl>
+{% endfor %}</section>
 {% else %}
+<section id="patches">
 No patches attached yet.
+</section>
 {% endif %}
 
 {% endblock %}

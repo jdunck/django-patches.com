@@ -1,19 +1,26 @@
 {% extends "base.html" %}
 
+{% block title %} Django patch reports {% endblock  %}
 {% block content %}
 
 <h1>Django patch reports</h1>
 
+<div class="dashboard">
+
+<section>
 <h2>Patches that actually apply</h2>
 
 <ul>{% for patch in query.applying_patches%}
   <li><a href="?ticket={{ patch.key }}"><code>{{ patch.value.name }}</code> from ticket {{ patch.key }}</a>
 {% endfor %}</ul>
+</section>
 
+<section>
 <h2>Patches that fail to apply</h2>
 
 <ul>{% for patch in query.failing_patches %}
   <li><a href="?ticket={{ patch.key }}"><code>{{ patch.value.name }}</code> from ticket {{ patch.key }}</a>
 {% endfor %}</ul>
+</section>
 
 {% endblock %}

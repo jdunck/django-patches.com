@@ -1,34 +1,72 @@
 <!DOCTYPE html>
 <html lang="en">
 <meta charset="utf-8">
-<title>Patch report</title>
+<title>{% block title %}django-patches.com{% endblock %}</title>
 <link rel="stylesheet" href="http://yui.yahooapis.com/3.0.0pr2/build/cssreset/reset-context-min.css">
 
 <style>
 html, body { margin: 0; padding: 0;}
 html { background:#092e20; font-family: sans-serif; }
-body { background: url(http://django-patches.com/site_media/patchpony.png) no-repeat; background-position: top right; }
+body {
+  background: url(http://django-patches.com/site_media/patchpony.png) no-repeat;
+  background-position: top right; 
+  padding: 2em;
+}
 
 h1 { color: #9AEF3F; }
+section, h1, h2, h3 { display: block;  }
 
-a:link, a:visited { color: #fff; }
-form {color: white; }
+a { color: #fff; }
+form { color: white; }
 
-dd,dl,dt { padding: 0.3em; }
-pre { margin:0 0 0 0; padding-left:10px; }
+pre {
+  border-width: 0px;
+  overflow-y: auto; max-height: 18em; background-color: white;
+  margin:0 0 0 0; padding-left: 10px; color: black;
+ }
 
-#patches { padding:0.5em; background:#234F32; color:#000; }
-#patches a:link, #patches a:visited { color: #000; }
+#patches { /* background:#234F32; */ color:#000; display: block; }
+#patches section { color: #fff; }
+#patches section h2 {  background-color: white; margin-top: 1em; padding: 0.3em; margin-bottom: 0px; }
+#patches section h2 a:link, #patches section h2 a:visited { color: #000; }
+#patches section section { color: white; margin-left:0em;  padding: 0.5em; background: #487858; padding-top: 0.5em; }
+#patches section section h3 { font-size: 80%;}
+#patches section section section h4 { margin-top: 0.2em; margin-bottom: 0em; }
+#patches section section section pre { margin-top: 0.2em; margin-bottom: 0.2em;}
 
-#patches dt.applies, #patches dt.breaks { font-size: 1.0 !important; }
-#patches dt { font-size: 1.3em; color: #fff; background: #487858; }
-#patches dt a { font-size: 1.3em; }
-#patches dt.applies { background-color: #fff; border-left: 20 px solid green; }
-#patches dt.breaks { background-color: #fff; border-left: 20px solid red; }
+.detail pre, .detail h2 { border-width: 0px; border-left: 10px; border-style: solid; }
+.applies pre, .applies h2 { border-color: green; }
+.breaks  pre, .breaks h2 { border-color: red; }
 
-#patches dd.content pre { overflow-y: auto; max-height: 18em; }
-#patches .applies pre { background: #fff; border-left: 10px solid #487858 ; }
-#patches .breaks pre { background: #fff; border-left: 10px solid red ; }
+#info dd a, #info dt a { color: black; }
+
+dl.table { width: 41.1em; margin: 2em 0; padding: 0;  display: block; }
+dl.table, dl.table * { background-color: #FFFFDD; }
+.table dt {
+  width: 10em;
+  float: left;
+  margin: 0 0 0 0;
+  padding: .5em;
+  border-top: 1px solid #999;
+  font-weight: bold;
+  clear: both;
+}
+
+.table dd {
+  float: left;
+  width: 18em;
+  margin: 0 0 0 0;
+  padding: .5em;
+  border-top: 1px solid #999;
+}
+
+#patches { clear: both; }
+
+.dashboard section { background-color: white; color: black; padding: 0.5em; margin-bottom: 2em; }
+.dashboard section h2 { margin-top: 0em; }
+.dashboard section ul { list-style-type: none; padding-left: 0em; }
+.dashboard section ul li a { color: black; }
+
 </style>
 
 
