@@ -232,8 +232,7 @@ class CouchQueries(object):
 
         # prewarm the cache
         for key in cls.QUERIES.keys():
-            print "foo"
-            cls.query(key)
+            [x for x in cls.query(key)]
 
 couchqueries = CouchQueries()
 
