@@ -208,10 +208,7 @@ class CouchQueries(object):
 
     @classmethod
     def query(self, name):
-        import time
-        print name, time.ctime(),
-        x = db.view('_view/queries/%s' % name)
-        print time.ctime(),
+        return db.view('_view/queries/%s' % name)
 
     __getattr__ = query
 
