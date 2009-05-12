@@ -23,13 +23,18 @@ def fetch_ticket(ticket_num):
 
     patches = []
     for filename, description, size, timestamp, user in links:
-      patches.append({
-        'content': server.ticket.getAttachment(ticket_num, filename).data,
-        'name': filename,
-        'description': description,
-        'timestamp': timestamp,
-        'user': user,
-      })
+        try:
+           content = server.ticket.getAttachment(ticket_num, filename).data
+        except xmlrpclib.Fault, fault:
+           assert "not found' while executing 'ticket.getAttachment()'" in fault.faultString
+        else:
+           patches.append({
+             'content': content,
+             'name': filename,
+             'description': description,
+             'timestamp': timestamp,
+             'user': user,
+           })
 
     num, somedate, somedate2, ticket_info = server.ticket.get(ticket_num)
 
