@@ -16,7 +16,7 @@ settings.configure(
   TEMPLATE_DIRS=(os.path.join(os.path.dirname(__file__), 'templates'), ),
 )
 
-from django_awesome_bot import get_from_couch, CouchQueries
+from django_awesome_bot import get_from_couch, couchqueries
 
 def simple_app(environ, start_response):
     def make_response(content, content_type='text/html'):
@@ -29,7 +29,7 @@ def simple_app(environ, start_response):
     url = urlparse(request_uri(environ, include_query=1))
 
     if not url.query:
-       return make_response(render_to_string("index.html", {'query': CouchQueries()}))
+       return make_response(render_to_string("index.html", {'query': couchqueries}))
 
     query = dict(parse_qsl(url.query))
 
