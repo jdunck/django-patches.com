@@ -14,7 +14,7 @@
 
 {% if patches %}
 <section id="patches">{% for patch in patches %}
-  <section class="detail {% if patch.applies %}applies{% else %}breaks{% endif %}">
+  <section class="detail {% if patch.applies %}applies{% else %}breaks{% endif %}" id="{{ patch.name }}">
     <h2>
       <a href="http://code.djangoproject.com/attachment/ticket/{{ num }}/{{ patch.name }}">
         {{ patch.name }}
