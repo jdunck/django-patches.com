@@ -172,8 +172,9 @@ class CouchQueries(object):
         'map': '''
           function(ticket) {
             for (var i in ticket.patches) {
-              if (ticket.patches[i].applies) {
-                emit(ticket.num, ticket.patches[i]);
+              var thispatch = ticket.patches[i];
+              if (thispatch.applies) {
+                emit(ticket.num, {name: thispatch['name']});
               }
             }
           }
@@ -183,8 +184,9 @@ class CouchQueries(object):
         'map': '''
           function(ticket) {
             for (var i in ticket.patches) {
-              if (!ticket.patches[i].applies) {
-                emit(ticket.num, ticket.patches[i]);
+              var thispatch = ticket.patches[i];
+              if (!thispatch.applies) {
+                emit(ticket.num, {name: thispatch['name']});
               }
             }
           }
