@@ -16,7 +16,7 @@ settings.configure(
   TEMPLATE_DIRS=(os.path.join(os.path.dirname(__file__), 'templates'), ),
 )
 
-from django_awesome_bot import get_from_couch, couchqueries
+from common import get_from_couch, couchqueries
 
 def simple_app(environ, start_response):
     def make_response(content, content_type='text/html'):
