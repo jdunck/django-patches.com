@@ -16,6 +16,9 @@ class PatchDoesNotApplyException(Exception):
 class PatchAlreadyApplied(PatchDoesNotApplyException):
     pass
 
+class TicketDoesNotExist(Exception):
+    pass
+
 def fetch_ticket(ticket_num):
     server = xmlrpclib.ServerProxy(TRAC_XMLRPC_URL)
     links =  server.ticket.listAttachments(ticket_num)
@@ -35,7 +38,12 @@ def fetch_ticket(ticket_num):
              'user': user,
            })
 
-    num, somedate, somedate2, ticket_info = server.ticket.get(ticket_num)
+    try:
+        num, somedate, somedate2, ticket_info = server.ticket.get(ticket_num)
+    except xmlrpclib.Fault, fault:
+        if "does not exist.' while executing 'ticket.get()'" in fault.faultString:
+            raise TicketDoesNotExist
+        assert False
 
     ticket_info.update({
       'num': ticket_num,
