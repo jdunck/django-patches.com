@@ -206,7 +206,6 @@ class CouchQueries(object):
     def __init__(self):
         self.create_permanent_views()
 
-    @classmethod
     def query(self, name):
         return db.view('_view/queries/%s' % name)
 
